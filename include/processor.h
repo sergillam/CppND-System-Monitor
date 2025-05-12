@@ -1,12 +1,18 @@
 #ifndef PROCESSOR_H
 #define PROCESSOR_H
 
+#include <deque>
+#include <cstddef>
+
 class Processor {
  public:
-  float Utilization();  // TODO: See src/processor.cpp
+  float Utilization();
 
-  // TODO: Declare any necessary private members
  private:
+  long prev_total_ = 0;
+  long prev_active_ = 0;
+  std::deque<float> utilization_cache_;
+  static constexpr size_t kCacheSize = 5;
 };
 
-#endif
+#endif  // PROCESSOR_H

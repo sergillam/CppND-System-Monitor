@@ -1,41 +1,50 @@
-#include <unistd.h>
-#include <cstddef>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "process.h"
-#include "processor.h"
 #include "system.h"
 
-using std::set;
-using std::size_t;
-using std::string;
-using std::vector;
-/*You need to complete the mentioned TODOs in order to satisfy the rubric criteria "The student will be able to extract and display basic data about the system."
+#include <unistd.h>
 
-You need to properly format the uptime. Refer to the comments mentioned in format. cpp for formatting the uptime.*/
+#include <algorithm>
 
-// TODO: Return the system's CPU
+#include "linux_parser.h"
+#include "process.h"
+#include "processor.h"
+
+// Retorna referência para a instância da CPU
 Processor& System::Cpu() { return cpu_; }
 
-// TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+// Retorna a lista de processos ordenada por uso de CPU
+std::vector<Process>& System::Processes() {
+  processes_.clear();
+  std::vector<int> pids = LinuxParser::Pids();
 
-// TODO: Return the system's kernel identifier (string)
-std::string System::Kernel() { return string(); }
+  for (int pid : pids) {
+    Process proc;
+    proc.SetPid(pid);  // setter simples
+    processes_.emplace_back(proc);
+  }
 
-// TODO: Return the system's memory utilization
-float System::MemoryUtilization() { return 0.0; }
+  // Ordena por uso de CPU (decrescente)
+  std::sort(processes_.begin(), processes_.end(),
+            [](const Process& a, const Process& b) {
+              return b < a;  // compara CPU de forma reversa
+            });
 
-// TODO: Return the operating system name
-std::string System::OperatingSystem() { return string(); }
+  return processes_;
+}
 
-// TODO: Return the number of processes actively running on the system
-int System::RunningProcesses() { return 0; }
+// Retorna a versão do kernel
+std::string System::Kernel() { return LinuxParser::Kernel(); }
 
-// TODO: Return the total number of processes on the system
-int System::TotalProcesses() { return 0; }
+// Retorna o nome do sistema operacional
+std::string System::OperatingSystem() { return LinuxParser::OperatingSystem(); }
 
-// TODO: Return the number of seconds since the system started running
-long int System::UpTime() { return 0; }
+// Retorna a utilização da memória
+float System::MemoryUtilization() { return LinuxParser::MemoryUtilization(); }
+
+// Retorna o uptime do sistema
+long System::UpTime() { return LinuxParser::UpTime(); }
+
+// Retorna o número total de processos
+int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
+
+// Retorna o número de processos em execução
+int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
